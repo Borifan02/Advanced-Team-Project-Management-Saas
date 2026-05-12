@@ -9,7 +9,7 @@
 - **Environment**: Node
 
 ### Build / Start
-- **Build Command**: `npm ci && npm run build`
+- **Build Command**: `npm ci --include=dev && npm run build`
 - **Start Command**: `npm run start`
 
 ### Environment variables (Render)
@@ -19,7 +19,7 @@ Set these in Render → Service → **Environment**:
 - `BASE_PATH=/api`
 - `MONGO_URI=...` (MongoDB Atlas connection string)
 - `SESSION_SECRET=...` (long random string)
-- `SESSION_EXPIRES_IN=1d` (optional)
+- `SESSION_EXPIRES_IN=1d` (optional; defaults to `1d` if not set)
 - `FRONTEND_ORIGIN=https://<your-vercel-domain>`
 - `FRONTEND_GOOGLE_CALLBACK_URL=https://<your-vercel-domain>/google/callback`
 - `GOOGLE_CLIENT_ID=...` (optional if using Google login)

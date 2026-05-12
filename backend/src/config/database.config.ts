@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { config } from "./app.config";
-import dns from "node:dns";
+import dns from "dns";
 
 // Helps avoid intermittent DNS/IPv6 resolution issues when connecting to Atlas.
 dns.setDefaultResultOrder("ipv4first");

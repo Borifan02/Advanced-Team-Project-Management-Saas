@@ -107,9 +107,6 @@ This guide ensures you gain a thorough understanding of every concept and featur
 
 ---
 
-### 📺 Like, Share & Subscribe  
-
-Don’t miss out! **[Subscribe to the Channel](https://tinyurl.com/subcribe-to-techwithEmma)** for more amazing content and exciting projects.  
 
 Now, let’s dive into the demo of **TeamSync**! 🚀
 
