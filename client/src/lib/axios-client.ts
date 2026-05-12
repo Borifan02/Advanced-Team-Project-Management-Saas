@@ -1,7 +1,31 @@
 import { CustomError } from "@/types/custom-error.type";
 import axios from "axios";
 
-const envBaseURL = (import.meta.env.VITE_API_BASE_URL || "").trim();
+const envBaseURLRaw = (import.meta.env.VITE_API_BASE_URL || "").trim();
+
+const normalizeApiBaseUrl = (value: string): string => {
+  const trimmed = value.trim().replace(/\/+$/, "");
+  if (!trimmed) return "";
+
+  // If user set the bare Render domain (e.g. https://foo.onrender.com)
+  // automatically target the API base path (/api).
+  if (/^https?:\/\//i.test(trimmed)) {
+    try {
+      const url = new URL(trimmed);
+      if (url.pathname === "" || url.pathname === "/") {
+        url.pathname = "/api";
+        return url.toString().replace(/\/+$/, "");
+      }
+      return trimmed;
+    } catch {
+      return trimmed;
+    }
+  }
+
+  return trimmed;
+};
+
+const envBaseURL = normalizeApiBaseUrl(envBaseURLRaw);
 
 // In local dev, default to `/api` so Vite can proxy to the backend.
 // In production (Vercel), you MUST set VITE_API_BASE_URL to your backend URL (e.g. https://<render>/api)
