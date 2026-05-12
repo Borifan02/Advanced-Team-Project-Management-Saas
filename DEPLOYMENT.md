@@ -21,10 +21,10 @@ Set these in Render → Service → **Environment**:
 - `SESSION_SECRET=...` (long random string)
 - `SESSION_EXPIRES_IN=1d` (optional; defaults to `1d` if not set)
 - `FRONTEND_ORIGIN=https://<your-vercel-domain>`
-- `FRONTEND_GOOGLE_CALLBACK_URL=https://<your-vercel-domain>/google/callback`
-- `GOOGLE_CLIENT_ID=...` (optional if using Google login)
-- `GOOGLE_CLIENT_SECRET=...`
-- `GOOGLE_CALLBACK_URL=https://<your-render-domain>/api/auth/google/callback`
+- `FRONTEND_GOOGLE_CALLBACK_URL=https://<your-vercel-domain>/google/callback` (optional; defaults to `${FRONTEND_ORIGIN}/google/callback`)
+- `GOOGLE_CLIENT_ID=...` (optional; required only if enabling Google login)
+- `GOOGLE_CLIENT_SECRET=...` (optional; required only if enabling Google login)
+- `GOOGLE_CALLBACK_URL=https://<your-render-domain>/api/auth/google/callback` (optional; required only if enabling Google login)
 
 ### MongoDB Atlas notes
 - Ensure Atlas **Network Access** allows Render to connect.
