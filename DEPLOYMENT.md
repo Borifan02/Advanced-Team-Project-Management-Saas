@@ -20,7 +20,7 @@ Set these in Render → Service → **Environment**:
 - `MONGO_URI=...` (MongoDB Atlas connection string)
 - `SESSION_SECRET=...` (long random string)
 - `SESSION_EXPIRES_IN=1d` (optional; defaults to `1d` if not set)
-- `FRONTEND_ORIGIN=https://<your-vercel-domain>`
+- `FRONTEND_ORIGIN=https://<your-vercel-domain>` (must match exactly; you can provide multiple comma-separated origins)
 - `FRONTEND_GOOGLE_CALLBACK_URL=https://<your-vercel-domain>/google/callback` (optional; defaults to `${FRONTEND_ORIGIN}/google/callback`)
 - `GOOGLE_CLIENT_ID=...` (optional; required only if enabling Google login)
 - `GOOGLE_CLIENT_SECRET=...` (optional; required only if enabling Google login)

@@ -66,7 +66,23 @@ app.use(
   cors({
     // In development, reflect the request origin so cookies/sessions work
     // even if the frontend runs on a different localhost port.
-    origin: config.NODE_ENV === "development" ? true : config.FRONTEND_ORIGIN,
+    origin:
+      config.NODE_ENV === "development"
+        ? true
+        : (origin, callback) => {
+            // Requests like health checks may not send an Origin header.
+            if (!origin) return callback(null, true);
+
+            const allowedOrigins = config.FRONTEND_ORIGIN.split(",")
+              .map((o) => o.trim())
+              .filter(Boolean);
+
+            if (allowedOrigins.includes(origin)) {
+              return callback(null, true);
+            }
+
+            return callback(new Error("Not allowed by CORS"));
+          },
     credentials: true,
   })
 );
