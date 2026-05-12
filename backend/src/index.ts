@@ -74,12 +74,21 @@ app.use(
 app.get(
   `/`,
   asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-    throw new BadRequestException(
-      "This is a bad request",
-      ErrorCodeEnum.AUTH_INVALID_TOKEN
-    );
     return res.status(HTTPSTATUS.OK).json({
-      message: "Hello Subscribe to the channel & share",
+      status: "ok",
+      service: "backend",
+      basePath: BASE_PATH,
+    });
+  })
+);
+
+app.get(
+  `${BASE_PATH}`,
+  asyncHandler(async (req: Request, res: Response) => {
+    return res.status(HTTPSTATUS.OK).json({
+      status: "ok",
+      service: "backend",
+      basePath: BASE_PATH,
     });
   })
 );
