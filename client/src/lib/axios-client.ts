@@ -27,11 +27,21 @@ const normalizeApiBaseUrl = (value: string): string => {
 
 const envBaseURL = normalizeApiBaseUrl(envBaseURLRaw);
 
+// If the frontend is served over HTTPS, the browser will block HTTP API calls.
+// This often manifests as Axios "Network Error". Prefer HTTPS for deployed backends.
+const resolvedEnvBaseURL =
+  typeof window !== "undefined" &&
+  import.meta.env.PROD &&
+  window.location.protocol === "https:" &&
+  envBaseURL.startsWith("http://")
+    ? envBaseURL.replace(/^http:\/\//i, "https://")
+    : envBaseURL;
+
 // In local dev, default to `/api` so Vite can proxy to the backend.
 // In production (Vercel), you MUST set VITE_API_BASE_URL to your backend URL (e.g. https://<render>/api)
 // otherwise the frontend will call Vercel itself and you will get 404s.
 const baseURL = envBaseURL
-  ? envBaseURL.replace(/\/+$/, "")
+  ? resolvedEnvBaseURL.replace(/\/+$/, "")
   : import.meta.env.DEV
     ? "/api"
     : undefined;
@@ -60,6 +70,20 @@ API.interceptors.response.use(
         errorCode: "MISSING_API_BASE_URL",
         message:
           "VITE_API_BASE_URL is not set (Vercel build-time env var). Set it to https://<your-render-domain>/api and redeploy.",
+      } as CustomError);
+    }
+
+    if (
+      import.meta.env.PROD &&
+      envBaseURL &&
+      resolvedEnvBaseURL !== envBaseURL &&
+      (error?.message === "Network Error" || error?.code === "ERR_NETWORK")
+    ) {
+      return Promise.reject({
+        ...error,
+        errorCode: "MIXED_CONTENT_BLOCKED",
+        message:
+          "Your frontend is HTTPS but VITE_API_BASE_URL is HTTP. Use the HTTPS backend URL (e.g. https://<your-domain>/api) and redeploy.",
       } as CustomError);
     }
 

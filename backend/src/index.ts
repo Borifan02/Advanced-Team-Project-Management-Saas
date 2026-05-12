@@ -62,6 +62,55 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
+const parseUrlSafe = (value: string): URL | null => {
+  try {
+    return new URL(value);
+  } catch {
+    return null;
+  }
+};
+
+const isOriginAllowed = (requestOrigin: string, allowListCsv: string): boolean => {
+  const originUrl = parseUrlSafe(requestOrigin);
+  if (!originUrl) return false;
+
+  const originHost = originUrl.host; // hostname[:port]
+  const originHostname = originUrl.hostname;
+  const originNormalized = originUrl.origin;
+
+  const allowed = allowListCsv
+    .split(",")
+    .map((o) => o.trim().replace(/\/+$/, ""))
+    .filter(Boolean);
+
+  for (const entry of allowed) {
+    if (entry === "*") return true;
+
+    // Full origin (with scheme)
+    if (/^https?:\/\//i.test(entry)) {
+      const url = parseUrlSafe(entry);
+      if (url && url.origin === originNormalized) return true;
+      continue;
+    }
+
+    // Wildcard subdomain pattern (e.g. *.vercel.app)
+    if (entry.startsWith("*.")) {
+      const base = entry.slice(2);
+      if (originHostname.endsWith(`.${base}`)) return true;
+      continue;
+    }
+
+    // Bare hostname or hostname:port
+    if (entry.includes(":")) {
+      if (originHost === entry) return true;
+    } else {
+      if (originHostname === entry) return true;
+    }
+  }
+
+  return false;
+};
+
 app.use(
   cors({
     // In development, reflect the request origin so cookies/sessions work
@@ -73,15 +122,11 @@ app.use(
             // Requests like health checks may not send an Origin header.
             if (!origin) return callback(null, true);
 
-            const allowedOrigins = config.FRONTEND_ORIGIN.split(",")
-              .map((o) => o.trim())
-              .filter(Boolean);
-
-            if (allowedOrigins.includes(origin)) {
+            if (isOriginAllowed(origin, config.FRONTEND_ORIGIN)) {
               return callback(null, true);
             }
 
-            return callback(new Error("Not allowed by CORS"));
+            return callback(new Error(`Not allowed by CORS: ${origin}`));
           },
     credentials: true,
   })
