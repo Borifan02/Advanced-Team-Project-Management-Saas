@@ -13,7 +13,31 @@ import {
 import MemberModel from "../models/member.model";
 import { ProviderEnum } from "../enums/account-provider.enum";
 
-const ensureDefaultRolesExist = async (session: mongoose.ClientSession) => {
+const isMongoTransactionNotSupported = (error: unknown): boolean => {
+  const message =
+    error && typeof error === "object" && "message" in error
+      ? String((error as any).message)
+      : "";
+
+  // Typical errors when connecting to a standalone MongoDB (no replica set)
+  // or when transactions are not enabled.
+  return (
+    message.includes("Transaction numbers are only allowed") ||
+    message.includes("replica set member") ||
+    message.includes("Transaction is not supported") ||
+    message.includes("IllegalOperation")
+  );
+};
+
+const isMongoDuplicateKeyError = (error: unknown): boolean => {
+  return Boolean(
+    error &&
+      typeof error === "object" &&
+      ("code" in error && (error as any).code === 11000)
+  );
+};
+
+const ensureDefaultRolesExist = async (session?: mongoose.ClientSession) => {
   const roleNames = Object.keys(RolePermissions) as Array<keyof typeof RolePermissions>;
 
   await Promise.all(
@@ -29,7 +53,7 @@ const ensureDefaultRolesExist = async (session: mongoose.ClientSession) => {
         {
           new: true,
           upsert: true,
-          session,
+          ...(session ? { session } : {}),
         }
       )
     )
@@ -45,44 +69,38 @@ export const loginOrCreateAccountService = async (data: {
 }) => {
   const { providerId, provider, displayName, email, picture } = data;
 
-  const session = await mongoose.startSession();
-
-  try {
-    session.startTransaction();
-    console.log("Started Session...");
-
-    // Ensure system roles exist (in case seed script wasn't run).
+  const run = async (session?: mongoose.ClientSession) => {
     await ensureDefaultRolesExist(session);
 
-    let user = await UserModel.findOne({ email }).session(session);
+    let userQuery = UserModel.findOne({ email });
+    if (session) userQuery = userQuery.session(session);
+    let user = await userQuery;
 
     if (!user) {
-      // Create a new user if it doesn't exist
       user = new UserModel({
         email,
         name: displayName,
         profilePicture: picture || null,
       });
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
 
       const account = new AccountModel({
         userId: user._id,
         provider: provider,
         providerId: providerId,
       });
-      await account.save({ session });
+      await account.save(session ? { session } : undefined);
 
-      // 3. Create a new workspace for the new user
       const workspace = new WorkspaceModel({
         name: `My Workspace`,
         description: `Workspace created for ${user.name}`,
         owner: user._id,
       });
-      await workspace.save({ session });
+      await workspace.save(session ? { session } : undefined);
 
-      const ownerRole = await RoleModel.findOne({
-        name: Roles.OWNER,
-      }).session(session);
+      let ownerRoleQuery = RoleModel.findOne({ name: Roles.OWNER });
+      if (session) ownerRoleQuery = ownerRoleQuery.session(session);
+      const ownerRole = await ownerRoleQuery;
 
       if (!ownerRole) {
         throw new NotFoundException("Owner role not found");
@@ -94,19 +112,33 @@ export const loginOrCreateAccountService = async (data: {
         role: ownerRole._id,
         joinedAt: new Date(),
       });
-      await member.save({ session });
+      await member.save(session ? { session } : undefined);
 
       user.currentWorkspace = workspace._id as mongoose.Types.ObjectId;
-      await user.save({ session });
+      await user.save(session ? { session } : undefined);
     }
-    await session.commitTransaction();
-    session.endSession();
-    console.log("End Session...");
 
     return { user };
+  };
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const result = await run(session);
+    await session.commitTransaction();
+    return result;
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    try {
+      await session.abortTransaction();
+    } catch {
+      // ignore
+    }
+
+    // Fallback for Mongo deployments that don't support transactions.
+    if (isMongoTransactionNotSupported(error)) {
+      return await run(undefined);
+    }
+
     throw error;
   } finally {
     session.endSession();
@@ -119,16 +151,26 @@ export const registerUserService = async (body: {
   password: string;
 }) => {
   const { email, name, password } = body;
-  const session = await mongoose.startSession();
 
-  try {
-    session.startTransaction();
-
-    // Ensure system roles exist (in case seed script wasn't run).
+  const run = async (session?: mongoose.ClientSession) => {
     await ensureDefaultRolesExist(session);
 
-    const existingUser = await UserModel.findOne({ email }).session(session);
+    let existingUserQuery = UserModel.findOne({ email });
+    if (session) existingUserQuery = existingUserQuery.session(session);
+    const existingUser = await existingUserQuery;
+
     if (existingUser) {
+      throw new BadRequestException("Email already exists");
+    }
+
+    // In case a previous request partially created an Account, also guard here.
+    let existingAccountQuery = AccountModel.findOne({
+      provider: ProviderEnum.EMAIL,
+      providerId: email,
+    });
+    if (session) existingAccountQuery = existingAccountQuery.session(session);
+    const existingAccount = await existingAccountQuery;
+    if (existingAccount) {
       throw new BadRequestException("Email already exists");
     }
 
@@ -137,26 +179,25 @@ export const registerUserService = async (body: {
       name,
       password,
     });
-    await user.save({ session });
+    await user.save(session ? { session } : undefined);
 
     const account = new AccountModel({
       userId: user._id,
       provider: ProviderEnum.EMAIL,
       providerId: email,
     });
-    await account.save({ session });
+    await account.save(session ? { session } : undefined);
 
-    // 3. Create a new workspace for the new user
     const workspace = new WorkspaceModel({
       name: `My Workspace`,
       description: `Workspace created for ${user.name}`,
       owner: user._id,
     });
-    await workspace.save({ session });
+    await workspace.save(session ? { session } : undefined);
 
-    const ownerRole = await RoleModel.findOne({
-      name: Roles.OWNER,
-    }).session(session);
+    let ownerRoleQuery = RoleModel.findOne({ name: Roles.OWNER });
+    if (session) ownerRoleQuery = ownerRoleQuery.session(session);
+    const ownerRole = await ownerRoleQuery;
 
     if (!ownerRole) {
       throw new NotFoundException("Owner role not found");
@@ -168,24 +209,41 @@ export const registerUserService = async (body: {
       role: ownerRole._id,
       joinedAt: new Date(),
     });
-    await member.save({ session });
+    await member.save(session ? { session } : undefined);
 
     user.currentWorkspace = workspace._id as mongoose.Types.ObjectId;
-    await user.save({ session });
-
-    await session.commitTransaction();
-    session.endSession();
-    console.log("End Session...");
+    await user.save(session ? { session } : undefined);
 
     return {
       userId: user._id,
       workspaceId: workspace._id,
     };
+  };
+
+  const session = await mongoose.startSession();
+  try {
+    session.startTransaction();
+    const result = await run(session);
+    await session.commitTransaction();
+    return result;
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    try {
+      await session.abortTransaction();
+    } catch {
+      // ignore
+    }
+
+    if (isMongoDuplicateKeyError(error)) {
+      throw new BadRequestException("Email already exists");
+    }
+
+    if (isMongoTransactionNotSupported(error)) {
+      return await run(undefined);
+    }
 
     throw error;
+  } finally {
+    session.endSession();
   }
 };
 
