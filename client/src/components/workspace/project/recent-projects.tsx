@@ -47,11 +47,11 @@ const RecentProjects = () => {
             <li
               key={project._id}
               role="listitem"
-              className="shadow-none cursor-pointer border-0 py-2 hover:bg-gray-50 transition-colors ease-in-out "
+              className="cursor-pointer rounded-md border-0 py-2 transition-colors ease-in-out hover:bg-muted/40 active:bg-muted/60"
             >
               <Link
                 to={`/workspace/${workspaceId}/project/${project._id}`}
-                className="grid gap-8 p-0"
+                className="grid gap-8 px-2"
               >
                 <div className="flex items-start gap-2">
                   <div className="text-xl !leading-[1.4rem]">
@@ -68,7 +68,9 @@ const RecentProjects = () => {
                     </p>
                   </div>
                   <div className="ml-auto flex items-center gap-4">
-                    <span className="text-sm text-gray-500">Created by</span>
+                    <span className="text-sm text-muted-foreground">
+                      Created by
+                    </span>
                     <Avatar className="hidden h-9 w-9 sm:flex">
                       <AvatarImage
                         src={project.createdBy.profilePicture || ""}

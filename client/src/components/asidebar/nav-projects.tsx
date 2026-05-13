@@ -113,7 +113,7 @@ export function NavProjects() {
             <button
               onClick={onOpen}
               type="button"
-              className="flex size-5 items-center justify-center rounded-full border"
+              className="flex size-6 items-center justify-center rounded-full border border-sidebar-border text-sidebar-foreground transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring"
             >
               <Plus className="size-3.5" />
             </button>

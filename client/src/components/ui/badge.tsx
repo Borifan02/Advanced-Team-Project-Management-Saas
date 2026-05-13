@@ -16,14 +16,25 @@ const badgeVariants = cva(
         destructive:
           "border-transparent bg-destructive text-destructive-foreground shadow hover:bg-destructive/80",
         outline: "text-foreground",
-        [TaskStatusEnum.BACKLOG]: "bg-gray-100 text-gray-600",
-        [TaskStatusEnum.TODO]: "  bg-[#DEEBFF] text-[#0052CC]",
-        [TaskStatusEnum.IN_PROGRESS]: "bg-yellow-100 text-yellow-600",
-        [TaskStatusEnum.IN_REVIEW]: "bg-purple-100 text-purple-500",
-        [TaskStatusEnum.DONE]: "bg-green-100 text-green-600",
-        [TaskPriorityEnum.HIGH]: "bg-orange-100 text-orange-600",
-        [TaskPriorityEnum.MEDIUM]: "bg-yellow-100 text-yellow-600",
-        [TaskPriorityEnum.LOW]: "bg-gray-100 text-gray-600",
+        // Status (token-based so it looks good in light/dark themes)
+        [TaskStatusEnum.BACKLOG]:
+          "border-transparent bg-muted text-muted-foreground",
+        [TaskStatusEnum.TODO]:
+          "border-transparent bg-secondary text-secondary-foreground",
+        [TaskStatusEnum.IN_PROGRESS]:
+          "border-transparent bg-accent text-accent-foreground",
+        [TaskStatusEnum.IN_REVIEW]:
+          "border-transparent bg-primary/10 text-primary",
+        [TaskStatusEnum.DONE]:
+          "border-transparent bg-primary text-primary-foreground",
+
+        // Priority
+        [TaskPriorityEnum.HIGH]:
+          "border-transparent bg-destructive/10 text-destructive",
+        [TaskPriorityEnum.MEDIUM]:
+          "border-transparent bg-primary/10 text-primary",
+        [TaskPriorityEnum.LOW]:
+          "border-transparent bg-muted text-muted-foreground",
       },
     },
     defaultVariants: {

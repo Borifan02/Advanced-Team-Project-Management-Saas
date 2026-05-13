@@ -53,7 +53,7 @@ const InviteUser = () => {
   };
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-gradient-to-b from-muted/50 to-background p-6 md:p-10">
       <div className="flex w-full max-w-md flex-col gap-6">
         <Link
           to="/"
@@ -63,7 +63,7 @@ const InviteUser = () => {
           Team Sync.
         </Link>
         <div className="flex flex-col gap-6">
-          <Card>
+          <Card className="border-border/60">
             <CardHeader className="text-center">
               <CardTitle className="text-xl">
                 Hey there! You're invited to join a TeamSync Workspace!
@@ -84,7 +84,8 @@ const InviteUser = () => {
                         <Button
                           type="submit"
                           disabled={isLoading}
-                          className="!bg-green-500 !text-white text-[23px] !h-auto"
+                          size="lg"
+                          className="text-base"
                         >
                           {isLoading && (
                             <Loader className="!w-6 !h-6 animate-spin" />

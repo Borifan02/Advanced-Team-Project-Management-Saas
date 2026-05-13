@@ -109,8 +109,7 @@ export default function EditProjectForm(props: {
       <div className="h-full">
         <div className="mb-5 pb-2 border-b">
           <h1
-            className="text-xl tracking-[-0.16px] dark:text-[#fcfdffef] font-semibold mb-1
-           text-center sm:text-left"
+            className="mb-1 text-center text-xl font-semibold tracking-tight text-foreground sm:text-left"
           >
             Edit Project
           </h1>
@@ -121,14 +120,14 @@ export default function EditProjectForm(props: {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)}>
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-foreground">
                 Select Emoji
               </label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="font-normal size-[60px] !p-2 !shadow-none mt-2 items-center rounded-full "
+                    className="mt-2 size-[60px] items-center rounded-full !p-2 font-normal !shadow-none transition-transform active:scale-95"
                   >
                     <span className="text-4xl">{emoji}</span>
                   </Button>
@@ -144,7 +143,7 @@ export default function EditProjectForm(props: {
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="dark:text-[#f1f7feb5] text-sm">
+                    <FormLabel className="text-sm">
                       Project title
                     </FormLabel>
                     <FormControl>
@@ -161,7 +160,7 @@ export default function EditProjectForm(props: {
                 name="description"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="dark:text-[#f1f7feb5] text-sm">
+                    <FormLabel className="text-sm">
                       Project description
                       <span className="text-xs font-extralight ml-2">
                         Optional
@@ -182,7 +181,7 @@ export default function EditProjectForm(props: {
 
             <Button
               disabled={isPending}
-              className="flex place-self-end  h-[40px] text-white font-semibold"
+              className="flex h-[40px] place-self-end font-semibold transition-transform active:scale-[0.98]"
               type="submit"
             >
               {isPending && <Loader className="animate-spin" />}

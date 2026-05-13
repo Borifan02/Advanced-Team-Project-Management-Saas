@@ -72,28 +72,47 @@ export const loginController = asyncHandler(
 
 export const logOutController = asyncHandler(
   async (req: Request, res: Response) => {
+    // IMPORTANT: Passport's req.logout() is async and (with sessions enabled)
+    // internally calls req.session.save() + req.session.regenerate().
+    // If we destroy the session before that completes, Passport can crash.
     req.logout((err) => {
       if (err) {
+        // If there's no session/cookie, Passport may complain; treat as already-logged-out.
+        const message = err instanceof Error ? err.message : String(err);
+        if (message.includes("Login sessions require session support")) {
+          res.clearCookie("session");
+          return res
+            .status(HTTPSTATUS.OK)
+            .json({ message: "Logged out successfully" });
+        }
+
         console.error("Logout error:", err);
         return res
           .status(HTTPSTATUS.INTERNAL_SERVER_ERROR)
           .json({ error: "Failed to log out" });
       }
-    });
 
-    // express-session
-    req.session?.destroy((destroyErr) => {
-      if (destroyErr) {
-        console.error("Session destroy error:", destroyErr);
+      if (!req.session) {
+        res.clearCookie("session");
         return res
-          .status(HTTPSTATUS.INTERNAL_SERVER_ERROR)
-          .json({ error: "Failed to log out" });
+          .status(HTTPSTATUS.OK)
+          .json({ message: "Logged out successfully" });
       }
 
-      res.clearCookie("session");
-      return res
-        .status(HTTPSTATUS.OK)
-        .json({ message: "Logged out successfully" });
+      // express-session
+      req.session.destroy((destroyErr) => {
+        if (destroyErr) {
+          console.error("Session destroy error:", destroyErr);
+          return res
+            .status(HTTPSTATUS.INTERNAL_SERVER_ERROR)
+            .json({ error: "Failed to log out" });
+        }
+
+        res.clearCookie("session");
+        return res
+          .status(HTTPSTATUS.OK)
+          .json({ message: "Logged out successfully" });
+      });
     });
   }
 );

@@ -4,7 +4,7 @@
 
 /* ... */
 html,
-hody {
+body {
   height: 100%;
   font-family: "DM Sans", serif !important;
 }
@@ -19,7 +19,7 @@ em-emoji-picker {
 .scrollbar {
   overflow-y: auto;
   scrollbar-width: thin; /* Firefox */
-  scrollbar-color: rgba(176, 174, 174, 0.7) #ddd; /* Firefox */
+  scrollbar-color: hsl(var(--muted-foreground) / 0.45) hsl(var(--muted)); /* Firefox */
   transition: scrollbar-color 0.3s ease, scrollbar-width 0.3s ease;
 }
 
@@ -28,17 +28,17 @@ em-emoji-picker {
 }
 
 .scrollbar::-webkit-scrollbar-track {
-  background: #ddd; /* Track color */
+  background: hsl(var(--muted)); /* Track color */
 }
 
 .scrollbar::-webkit-scrollbar-thumb {
-  background-color: gray; /* Thumb color */
-  border-radius: 100%; /* Rounded edges */
+  background-color: hsl(var(--muted-foreground) / 0.35); /* Thumb color */
+  border-radius: 9999px; /* Rounded edges */
   transition: background-color 0.3s ease; /* Smooth color change */
 }
 
 .scrollbar:hover::-webkit-scrollbar-thumb {
-  background-color: darkgray; /* Hover effect */
+  background-color: hsl(var(--muted-foreground) / 0.55); /* Hover effect */
 }
 
 @layer base {

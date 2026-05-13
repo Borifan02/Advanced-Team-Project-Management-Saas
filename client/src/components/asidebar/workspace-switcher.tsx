@@ -70,7 +70,7 @@ export function WorkspaceSwitcher() {
         <span>Workspaces</span>
         <button
           onClick={onOpen}
-          className="flex size-5 items-center justify-center rounded-full border"
+          className="flex size-6 items-center justify-center rounded-full border border-sidebar-border text-sidebar-foreground transition-colors hover:bg-sidebar-accent focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sidebar-ring"
         >
           <Plus className="size-3.5" />
         </button>
@@ -81,7 +81,7 @@ export function WorkspaceSwitcher() {
             <DropdownMenuTrigger asChild>
               <SidebarMenuButton
                 size="lg"
-                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground bg-gray-10"
+                className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground transition-colors"
               >
                 {activeWorkspace ? (
                   <>

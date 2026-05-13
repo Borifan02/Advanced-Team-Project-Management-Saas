@@ -11,12 +11,14 @@ const AppLayout = () => {
     <AuthProvider>
       <SidebarProvider>
         <Asidebar />
-        <SidebarInset className="overflow-x-hidden">
+        <SidebarInset className="overflow-x-hidden bg-gradient-to-b from-muted/40 to-background">
           <div className="w-full">
             <>
               <Header />
-              <div className="px-3 lg:px-20 py-3">
-                <Outlet />
+              <div className="px-3 py-4 lg:px-10">
+                <div className="mx-auto w-full max-w-6xl">
+                  <Outlet />
+                </div>
               </div>
             </>
             <CreateWorkspaceDialog />

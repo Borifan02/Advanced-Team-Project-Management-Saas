@@ -71,7 +71,7 @@ const SignUp = () => {
   };
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-muted p-6 md:p-10">
+    <div className="flex min-h-svh flex-col items-center justify-center gap-6 bg-gradient-to-b from-muted/50 to-background p-6 md:p-10">
       <div className="flex w-full max-w-sm flex-col gap-6">
         <Link
           to="/"
@@ -81,7 +81,7 @@ const SignUp = () => {
           Team Sync.
         </Link>
         <div className="flex flex-col gap-6">
-          <Card>
+          <Card className="border-border/60">
             <CardHeader className="text-center">
               <CardTitle className="text-xl">Create an account</CardTitle>
               <CardDescription>
@@ -107,7 +107,7 @@ const SignUp = () => {
                           name="name"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="dark:text-[#f1f7feb5] text-sm">
+                              <FormLabel className="text-sm">
                                 Name
                               </FormLabel>
                               <FormControl>
@@ -129,7 +129,7 @@ const SignUp = () => {
                           name="email"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="dark:text-[#f1f7feb5] text-sm">
+                              <FormLabel className="text-sm">
                                 Email
                               </FormLabel>
                               <FormControl>
@@ -151,7 +151,7 @@ const SignUp = () => {
                           name="password"
                           render={({ field }) => (
                             <FormItem>
-                              <FormLabel className="dark:text-[#f1f7feb5] text-sm">
+                              <FormLabel className="text-sm">
                                 Password
                               </FormLabel>
                               <FormControl>
