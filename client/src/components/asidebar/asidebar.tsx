@@ -1,6 +1,13 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { EllipsisIcon, Loader, LogOut } from "lucide-react";
+import {
+  EllipsisIcon,
+  Loader,
+  LogOut,
+  Moon,
+  Sun,
+  Command,
+} from "lucide-react";
 import {
   Sidebar,
   SidebarHeader,
@@ -31,43 +38,65 @@ import { NavProjects } from "./nav-projects";
 import { Separator } from "../ui/separator";
 import useWorkspaceId from "@/hooks/use-workspace-id";
 import { useAuthContext } from "@/context/auth-provider";
+import { useTheme } from "@/context/theme-provider";
+import { useEnterpriseStore } from "@/context/enterprise-store";
+import { toast } from "@/hooks/use-toast";
 
 const Asidebar = () => {
   const { isLoading, user } = useAuthContext();
+  const { theme, setTheme } = useTheme();
+  const { setCommandPaletteOpen } = useEnterpriseStore();
 
   const { open } = useSidebar();
   const workspaceId = useWorkspaceId();
 
   const [isOpen, setIsOpen] = useState(false);
 
+  const displayName = user?.name || "User";
+  const displayEmail = user?.email || "";
+
+  const toggleTheme = () => {
+    const nextTheme = theme === "dark" ? "light" : "dark";
+    setTheme(nextTheme);
+    toast({
+      title: "Theme Updated",
+      description: `Switched to ${nextTheme} theme.`,
+    });
+  };
+
   return (
     <>
       <Sidebar collapsible="icon">
-        <SidebarHeader className="!py-0 dark:bg-background">
-          <div className="flex h-[50px] items-center justify-start w-full px-1">
+        <SidebarHeader className="!py-0 border-b border-border/40 bg-sidebar/80 backdrop-blur-md">
+          <div className="flex h-14 items-center justify-start w-full px-2">
             <Logo url={`/workspace/${workspaceId}`} />
             {open && (
               <Link
                 to={`/workspace/${workspaceId}`}
-                className="hidden md:flex ml-2 items-center gap-2 self-center font-medium"
+                className="hidden md:flex ml-2.5 items-center gap-2 self-center font-bold text-base tracking-tight"
               >
-                Team Sync.
+                <span className="bg-gradient-to-r from-foreground via-foreground to-muted-foreground bg-clip-text text-transparent">
+                  TeamSync
+                </span>
+                <span className="text-[9px] font-extrabold px-1.5 py-0.5 rounded-full bg-primary/15 text-primary border border-primary/25 tracking-wide">
+                  ENTERPRISE
+                </span>
               </Link>
             )}
           </div>
         </SidebarHeader>
-        <SidebarContent className=" !mt-0 dark:bg-background">
-          <SidebarGroup className="!py-0">
+        <SidebarContent className="!mt-0 bg-sidebar/50 scrollbar">
+          <SidebarGroup className="!py-1">
             <SidebarGroupContent>
               <WorkspaceSwitcher />
-              <Separator />
+              <Separator className="my-1.5 opacity-60" />
               <NavMain />
-              <Separator />
+              <Separator className="my-1.5 opacity-60" />
               <NavProjects />
             </SidebarGroupContent>
           </SidebarGroup>
         </SidebarContent>
-        <SidebarFooter className="dark:bg-background">
+        <SidebarFooter className="bg-sidebar/80 border-t border-border/40 backdrop-blur-md">
           <SidebarMenu>
             <SidebarMenuItem>
               {isLoading ? (
@@ -80,34 +109,60 @@ const Asidebar = () => {
                   <DropdownMenuTrigger asChild>
                     <SidebarMenuButton
                       size="lg"
-                      className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+                      className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground hover:bg-sidebar-accent/60 transition-all rounded-xl border border-transparent hover:border-border/40"
                     >
-                      <Avatar className="h-8 w-8 rounded-full">
-                        <AvatarImage src={user?.profilePicture || ""} />
-                        <AvatarFallback className="rounded-full border border-border">
-                          {user?.name?.split(" ")?.[0]?.charAt(0)}
-                          {user?.name?.split(" ")?.[1]?.charAt(0)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="grid flex-1 text-left text-sm leading-tight">
-                        <span className="truncate font-semibold">
-                          {user?.name}
-                        </span>
-                        <span className="truncate text-xs">{user?.email}</span>
+                      <div className="relative">
+                        <Avatar className="h-8 w-8 rounded-full ring-1 ring-border shadow-sm">
+                          <AvatarImage src={user?.profilePicture || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"} />
+                          <AvatarFallback className="rounded-full bg-primary/10 text-primary font-bold text-xs">
+                            {displayName?.split(" ")?.[0]?.charAt(0)}
+                            {displayName?.split(" ")?.[1]?.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span className="absolute bottom-0 right-0 size-2 rounded-full bg-emerald-500 ring-2 ring-background" />
                       </div>
-                      <EllipsisIcon className="ml-auto size-4" />
+                      <div className="grid flex-1 text-left text-sm leading-tight ml-1">
+                        <span className="truncate font-semibold text-foreground flex items-center gap-1.5">
+                          {displayName}
+                        </span>
+                        <span className="truncate text-[11px] text-muted-foreground">{displayEmail}</span>
+                      </div>
+                      <EllipsisIcon className="ml-auto size-4 text-muted-foreground" />
                     </SidebarMenuButton>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
-                    className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+                    className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-xl p-1"
                     side={"bottom"}
                     align="start"
                     sideOffset={4}
                   >
-                    <DropdownMenuGroup></DropdownMenuGroup>
+                    <DropdownMenuGroup>
+                      <DropdownMenuItem
+                        className="gap-2 cursor-pointer text-xs"
+                        onClick={toggleTheme}
+                      >
+                        {theme === "dark" ? (
+                          <Sun className="h-4 w-4 text-amber-400" />
+                        ) : (
+                          <Moon className="h-4 w-4 text-sky-400" />
+                        )}
+                        <span>Toggle Theme ({theme})</span>
+                      </DropdownMenuItem>
+
+                      <DropdownMenuItem
+                        className="gap-2 cursor-pointer text-xs"
+                        onClick={() => setCommandPaletteOpen(true)}
+                      >
+                        <Command className="h-4 w-4 text-primary" />
+                        <span>Command Palette (⌘K)</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuGroup>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem onClick={() => setIsOpen(true)}>
-                      <LogOut />
+                    <DropdownMenuItem
+                      onClick={() => setIsOpen(true)}
+                      className="gap-2 text-rose-500 cursor-pointer text-xs"
+                    >
+                      <LogOut className="h-4 w-4" />
                       Log out
                     </DropdownMenuItem>
                   </DropdownMenuContent>

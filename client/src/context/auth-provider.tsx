@@ -2,7 +2,7 @@
 import { createContext, useContext, useEffect } from "react";
 import useWorkspaceId from "@/hooks/use-workspace-id";
 import useAuth from "@/hooks/api/use-auth";
-import { UserType, WorkspaceType } from "@/types/api.type";
+import { UserType, WorkspaceType, WorkspaceWithMembersType } from "@/types/api.type";
 import useGetWorkspaceQuery from "@/hooks/api/use-get-workspace";
 import { useNavigate } from "react-router-dom";
 import usePermissions from "@/hooks/use-permissions";
@@ -36,7 +36,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     isFetching,
     refetch: refetchAuth,
   } = useAuth();
-  const user = authData?.user;
+  const serverUser = authData?.user;
 
   const {
     data: workspaceData,
@@ -45,17 +45,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     refetch: refetchWorkspace,
   } = useGetWorkspaceQuery(workspaceId);
 
-  const workspace = workspaceData?.workspace;
+  const serverWorkspace = workspaceData?.workspace;
+
+  const user = serverUser;
+  const workspace = serverWorkspace;
 
   useEffect(() => {
     if (workspaceError) {
-      if (workspaceError?.errorCode === "ACCESS_UNAUTHORIZED") {
-        navigate("/"); // Redirect if the user is not a member of the workspace
+      // If requested workspace is invalid, not found, or unauthorized, redirect safely
+      const validWsId =
+        typeof user?.currentWorkspace === "string"
+          ? user.currentWorkspace
+          : (user?.currentWorkspace as any)?._id;
+
+      if (validWsId && validWsId !== workspaceId) {
+        navigate(`/workspace/${validWsId}`, { replace: true });
+      } else {
+        navigate("/", { replace: true });
       }
     }
-  }, [navigate, workspaceError]);
+  }, [navigate, workspaceError, user, workspaceId]);
 
-  const permissions = usePermissions(user, workspace);
+  const permissions = usePermissions(user, workspace as WorkspaceWithMembersType);
 
   const hasPermission = (permission: PermissionType): boolean => {
     return permissions.includes(permission);

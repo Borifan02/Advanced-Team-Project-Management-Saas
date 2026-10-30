@@ -19,6 +19,7 @@ import {
 import { priorities, statuses } from "./data";
 import { TaskType } from "@/types/api.type";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useEnterpriseStore } from "@/context/enterprise-store";
 
 export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
   const columns: ColumnDef<TaskType>[] = [
@@ -53,11 +54,16 @@ export const getColumns = (projectId?: string): ColumnDef<TaskType>[] => {
       ),
       cell: ({ row }) => {
         return (
-          <div className="flex flex-wrap space-x-2">
-            <Badge variant="outline" className="capitalize shrink-0 h-[25px]">
+          <div
+            className="flex flex-wrap items-center space-x-2 cursor-pointer group"
+            onClick={() => {
+              useEnterpriseStore.getState().setSelectedTask(row.original);
+            }}
+          >
+            <Badge variant="outline" className="font-mono text-xs font-semibold shrink-0 h-[24px] group-hover:border-primary/60 transition-colors">
               {row.original.taskCode}
             </Badge>
-            <span className="block lg:max-w-[220px] max-w-[200px] font-medium">
+            <span className="block lg:max-w-[280px] max-w-[200px] font-medium text-foreground group-hover:text-primary group-hover:underline transition-colors truncate">
               {row.original.title}
             </span>
           </div>

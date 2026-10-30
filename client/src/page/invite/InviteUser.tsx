@@ -36,13 +36,32 @@ const InviteUser = () => {
   const handleSubmit = (e: { preventDefault: () => void }) => {
     e.preventDefault();
     mutate(inviteCode, {
-      onSuccess: (data) => {
+      onSuccess: (data: any) => {
         queryClient.resetQueries({
           queryKey: ["userWorkspaces"],
         });
+        toast({
+          title: data?.alreadyMember ? "Welcome Back!" : "Success",
+          description: data?.alreadyMember
+            ? "You are already a member of this workspace. Redirecting..."
+            : "Successfully joined the workspace!",
+          variant: "success",
+        });
         navigate(`/workspace/${data.workspaceId}`);
       },
-      onError: (error) => {
+      onError: (error: any) => {
+        if (error.message?.includes("already a member")) {
+          queryClient.resetQueries({
+            queryKey: ["userWorkspaces"],
+          });
+          toast({
+            title: "Already a Member",
+            description: "You are already a member of this workspace.",
+            variant: "success",
+          });
+          navigate("/");
+          return;
+        }
         toast({
           title: "Error",
           description: error.message,
