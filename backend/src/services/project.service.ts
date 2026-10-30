@@ -31,6 +31,10 @@ export const getProjectsInWorkspaceService = async (
   pageSize: number,
   pageNumber: number
 ) => {
+  if (!mongoose.isValidObjectId(workspaceId)) {
+    return { projects: [], totalCount: 0, totalPages: 0, skip: 0 };
+  }
+
   // Step 1: Find all projects in the workspace
 
   const totalCount = await ProjectModel.countDocuments({
@@ -56,6 +60,12 @@ export const getProjectByIdAndWorkspaceIdService = async (
   workspaceId: string,
   projectId: string
 ) => {
+  if (!mongoose.isValidObjectId(workspaceId) || !mongoose.isValidObjectId(projectId)) {
+    throw new NotFoundException(
+      "Project not found or does not belong to the specified workspace"
+    );
+  }
+
   const project = await ProjectModel.findOne({
     _id: projectId,
     workspace: workspaceId,
@@ -74,6 +84,12 @@ export const getProjectAnalyticsService = async (
   workspaceId: string,
   projectId: string
 ) => {
+  if (!mongoose.isValidObjectId(workspaceId) || !mongoose.isValidObjectId(projectId)) {
+    throw new NotFoundException(
+      "Project not found or does not belong to this workspace"
+    );
+  }
+
   const project = await ProjectModel.findById(projectId);
 
   if (!project || project.workspace.toString() !== workspaceId.toString()) {

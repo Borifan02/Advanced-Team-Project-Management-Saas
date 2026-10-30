@@ -1,3 +1,4 @@
+import mongoose from "mongoose";
 import { TaskPriorityEnum, TaskStatusEnum } from "../enums/task.enum";
 import MemberModel from "../models/member.model";
 import ProjectModel from "../models/project.model";
@@ -112,6 +113,10 @@ export const getAllTasksService = async (
     pageNumber: number;
   }
 ) => {
+  if (!mongoose.isValidObjectId(workspaceId)) {
+    return { tasks: [], totalCount: 0, totalPages: 0, skip: 0 };
+  }
+
   const query: Record<string, any> = {
     workspace: workspaceId,
   };

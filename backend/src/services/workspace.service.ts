@@ -74,6 +74,10 @@ export const getAllWorkspacesUserIsMemberService = async (userId: string) => {
 };
 
 export const getWorkspaceByIdService = async (workspaceId: string) => {
+  if (!mongoose.isValidObjectId(workspaceId)) {
+    throw new NotFoundException("Invalid workspace ID or workspace not found");
+  }
+
   const workspace = await WorkspaceModel.findById(workspaceId);
 
   if (!workspace) {
@@ -99,7 +103,9 @@ export const getWorkspaceByIdService = async (workspaceId: string) => {
 //**************** **************/
 
 export const getWorkspaceMembersService = async (workspaceId: string) => {
-  // Fetch all members of the workspace
+  if (!mongoose.isValidObjectId(workspaceId)) {
+    throw new NotFoundException("Invalid workspace ID or workspace not found");
+  }
 
   const members = await MemberModel.find({
     workspaceId,
@@ -115,6 +121,10 @@ export const getWorkspaceMembersService = async (workspaceId: string) => {
 };
 
 export const getWorkspaceAnalyticsService = async (workspaceId: string) => {
+  if (!mongoose.isValidObjectId(workspaceId)) {
+    throw new NotFoundException("Invalid workspace ID or workspace not found");
+  }
+
   const currentDate = new Date();
 
   const totalTasks = await TaskModel.countDocuments({

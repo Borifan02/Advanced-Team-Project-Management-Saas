@@ -1,10 +1,10 @@
+import mongoose from "mongoose";
 import { ErrorCodeEnum } from "../enums/error-code.enum";
 import { Roles } from "../enums/role.enum";
 import MemberModel from "../models/member.model";
 import RoleModel from "../models/roles-permission.model";
 import WorkspaceModel from "../models/workspace.model";
 import {
-  BadRequestException,
   NotFoundException,
   UnauthorizedException,
 } from "../utils/appError";
@@ -13,6 +13,10 @@ export const getMemberRoleInWorkspace = async (
   userId: string,
   workspaceId: string
 ) => {
+  if (!mongoose.isValidObjectId(workspaceId)) {
+    throw new NotFoundException("Invalid workspace ID or workspace not found");
+  }
+
   const workspace = await WorkspaceModel.findById(workspaceId);
   if (!workspace) {
     throw new NotFoundException("Workspace not found");
@@ -49,10 +53,14 @@ export const joinWorkspaceByInviteService = async (
   const existingMember = await MemberModel.findOne({
     userId,
     workspaceId: workspace._id,
-  }).exec();
+  }).populate("role").exec();
 
   if (existingMember) {
-    throw new BadRequestException("You are already a member of this workspace");
+    return {
+      workspaceId: workspace._id,
+      role: (existingMember.role as any)?.name || Roles.MEMBER,
+      alreadyMember: true,
+    };
   }
 
   const role = await RoleModel.findOne({ name: Roles.MEMBER });
@@ -69,5 +77,5 @@ export const joinWorkspaceByInviteService = async (
   });
   await newMember.save();
 
-  return { workspaceId: workspace._id, role: role.name };
+  return { workspaceId: workspace._id, role: role.name, alreadyMember: false };
 };
